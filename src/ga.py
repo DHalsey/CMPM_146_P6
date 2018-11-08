@@ -343,13 +343,26 @@ class Individual_DE(object):
 Individual = Individual_Grid
 
 
+
 def generate_successors(population):
     results = []
+    counter = 0
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
+    #print(population[0], "\n\n")
+    #print(Individual.genome)
+    for pop in population:
+        counter +=1
+        genChild = Individual.generate_children(Individual,pop)
+        genome = Individual.mutate(Individual,genChild[0].genome)
+        #print(genome.fitness)
+        if len(genChild) >= 1:
+                results.append(Individual.random_individual())
+                
+    
     if results: #if we have generated results, return results
         return results
-    else: #while generat_successors is broken, return population
+    else: #while generate_successors is broken, return population
         return population
 
 
