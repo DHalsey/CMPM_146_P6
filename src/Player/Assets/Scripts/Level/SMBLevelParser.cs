@@ -50,7 +50,6 @@ public class SMBLevelParser {
 
 		int width = 0;
 		int height = 0;
-
 		TextAsset levelfile = Resources.Load<TextAsset> (filename);
 
 		if (!levelfile) {

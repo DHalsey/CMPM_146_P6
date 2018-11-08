@@ -345,6 +345,7 @@ Individual = Individual_Grid
 
 def generate_successors(population):
     results = []
+    #results.append(population[0].generate_children(population))
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
     return results
@@ -378,7 +379,7 @@ def ga():
             while True:
                 now = time.time()
                 # Print out statistics
-                if generation > 0:
+                if generation > 0:                    
                     best = max(population, key=Individual.fitness)
                     print("Generation:", str(generation))
                     print("Max fitness:", str(best.fitness()))
@@ -389,7 +390,7 @@ def ga():
                             f.write("".join(row) + "\n")
                 generation += 1
                 # STUDENT Determine stopping condition
-                stop_condition = False
+                stop_condition = True #DEBUG was False to start
                 if stop_condition:
                     break
                 # STUDENT Also consider using FI-2POP as in the Sorenson & Pasquier paper
@@ -415,7 +416,8 @@ if __name__ == "__main__":
     print("Best fitness: " + str(best.fitness()))
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
-    for k in range(0, 10):
-        with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+    for k in range(0, 1):
+        #with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+        with open("Player/Assets/Resources/Levels/" + "level1" + ".txt", 'w') as f:
             for row in final_gen[k].to_level():
                 f.write("".join(row) + "\n")
