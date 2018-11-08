@@ -345,10 +345,12 @@ Individual = Individual_Grid
 
 def generate_successors(population):
     results = []
-    #results.append(population[0].generate_children(population))
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
-    return results
+    if results: #if we have generated results, return results
+        return results
+    else: #while generat_successors is broken, return population
+        return population
 
 
 def ga():
@@ -390,7 +392,9 @@ def ga():
                             f.write("".join(row) + "\n")
                 generation += 1
                 # STUDENT Determine stopping condition
-                stop_condition = True #DEBUG was False to start
+                stop_condition = False #DEBUG was False to start
+                if generation > 1: #stop after so many iterations
+                    stop_condition = True #DEBUG was False to start
                 if stop_condition:
                     break
                 # STUDENT Also consider using FI-2POP as in the Sorenson & Pasquier paper
