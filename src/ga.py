@@ -67,11 +67,14 @@ class Individual_Grid(object):
         # STUDENT implement a mutation operator, also consider not mutating this individual
         # STUDENT also consider weighting the different tile types so it's not uniformly random
         # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-
         left = 1
         right = width - 1
         for y in range(height):
             for x in range(left, right):
+                if y == 14 or y == 13:
+                    genome[y][x] = "-"
+                if genome[y][x] == "E":
+                    genome[y][x] = "-"
                 pass
         return genome
 
@@ -367,7 +370,7 @@ def generate_successors(population):
 
 def ga():
     # STUDENT Feel free to play with this parameter
-    pop_limit = 480
+    pop_limit = 8
     # Code to parallelize some computations
     batches = os.cpu_count()
     if pop_limit % batches != 0:
@@ -427,8 +430,14 @@ def ga():
 
 
 if __name__ == "__main__":
-    final_gen = sorted(ga(), key=Individual.fitness, reverse=True)
+    #final_gen = sorted(ga(), key=Individual.fitness, reverse=True)
+    #best = final_gen[0]
+
+    #---------------TEST TO PRINT FIRST INDIVIDUAL-----------------
+    final_gen = ga()
     best = final_gen[0]
+    #--------------END TEST----------------------------------------
+
     print("Best fitness: " + str(best.fitness()))
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
