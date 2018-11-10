@@ -11,6 +11,7 @@ import math
 width = 200
 height = 16
 
+
 options = [
     "-",  # an empty space
     "X",  # a solid wall
@@ -63,35 +64,88 @@ class Individual_Grid(object):
         return self._fitness
 
     # Mutate a genome into a new genome.  Note that this is a _genome_, not an individual!
-    def mutate(self, genome):
+    # mode = 1 will remove some pieces
+    # mode = 2 will add some pieces
+    def mutate(self, genome, mode = 1):
         # STUDENT implement a mutation operator, also consider not mutating this individual
         # STUDENT also consider weighting the different tile types so it's not uniformly random
         # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
+        probability = 0.2
         left = 1
-        right = width - 1
+        right = width - 2
+        
         for y in range(height):
             for x in range(left, right):
-                if y == 14 or y == 13:
-                    genome[y][x] = "-"
-                if genome[y][x] == "E":
-                    genome[y][x] = "-"
-                pass
+                if y <= 14: #we are not on the floor
+                    if random.random() <= probability:
+                        if mode == 1: #if we should remove some pieces
+                            genome[y][x] = "-"
+                        elif mode == 2:
+                            genome[y][x] = random.choices(options)
+                        
+                #else: #we are on the floor
+
+                #pass
+        #remove the bullshit above the player's start
+        for y in range(height-2):
+            genome[y][0] = "-"
+        return self.cleanup(genome)
+
+    def cleanup(self, genome):
+        pipeMaxHeight = 11
+        for y in range(height-1):
+            for x in range(1, width-2):
+                if genome[y][x] == "T": #if we have a pip top
+                    if y < pipeMaxHeight: #if it is above the max height
+                        genome[y][x] = "-"
+                        randInt = random.randint(pipeMaxHeight,height-2)
+                        genome[randInt][x] = "T" #move the pipe down to max height
+                        genome[randInt][x+1] = "-" #remove the block to the right
+                    else:
+                        genome[y][x+1] == "-"
+                        for yy in range(y+1,height-1):
+                            genome[yy][x] = "|" #connect the pipe to the ground
+                            genome[yy][x+1] = "-" #remove any overlap on the pipe
+                if genome[y][x] == "T":
+                    for yy in range(0,height-1):
+                        if genome[yy][x-1] == "T":
+                            genome[y][x] = "-"
+                
+                if genome[y][x] == "|":
+                    hasTop = False #is there a topper above it?
+                    for yy in range(0,y):
+                        if genome[yy][x] == "T": 
+                            hasTop = True
+                    if hasTop == False:
+                        genome[y][x] = "-" #remove the pipe piece if it didnt have a topper
+              
+                if genome[y][x] != "-" and genome[y][x] != "o": #if we are at a solid block
+                    if genome[y+1][x] == "-" or genome[y+1][x] == "o": #if we have a space below the block
+                        if genome[y+2][x] != "-" and genome[y+2][x] != "o": #if we have a 1 block gap
+                            genome[y][x] = random.choice(["o","-"]) #remove the top block to guarantee a 2 block gap
+                        if genome[y+2][x-1] != "-" and genome[y+2][x-1] != "o": #if we have a 1 block gap
+                            genome[y][x] = random.choice(["o","-"]) #remove the top block to guarantee a 2 block gap
+                        if genome[y+2][x+1] != "-" and genome[y+2][x+1] != "o": #if we have a 1 block gap
+                            genome[y][x] = random.choice(["o","-"]) #remove the top block to guarantee a 2 block gap
+
+                
         return genome
+
 
     # Create zero or more children from self and other
     def generate_children(self, other):
-        new_genome = copy.deepcopy(self.genome)
-        # Leaving first and last columns alone...
-        # do crossover with other
-        left = 1
-        right = width - 1
-        for y in range(height):
-            for x in range(left, right):
-                # STUDENT Which one should you take?  Self, or other?  Why?
-                # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                pass
-        # do mutation; note we're returning a one-element tuple here
-        return (Individual_Grid(new_genome),)
+        new_genomeADD = copy.deepcopy(self.genome)
+        new_genomeREMOVE = copy.deepcopy(self.genome)
+        genomeADDED = Individual.mutate(self,new_genomeADD)
+        genomeREMOVED = Individual.mutate(self,new_genomeREMOVE, 2)
+        individualADDED = Individual(genomeADDED)
+        IndividualREMOVED = Individual(genomeADDED)
+
+        print(individualADDED.fitness())
+        if (individualADDED.fitness() > IndividualREMOVED.fitness()):
+            return (individualADDED,)
+        else:
+            return (IndividualREMOVED,)
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
@@ -352,13 +406,13 @@ def generate_successors(population):
 
     for pop in population:
         counter +=1
-        genChild = Individual.generate_children(pop,pop.genome)
-        genome = Individual.mutate(pop,genChild[0].genome)
+        newPop = Individual.generate_children(pop,pop.genome)
+        #genome = Individual.mutate(pop,genChild[0].genome)
 
-        if len(genChild) >= 1:
-            results.append(Individual_Grid(genome))
-        else:
-            results.append(pop)
+        #if genome:
+        results.append(newPop[0])
+        #else:
+        #    results.append(pop)
             #results.append(Individual.random_individual())
                 
     
@@ -408,7 +462,7 @@ def ga():
                 generation += 1
                 # STUDENT Determine stopping condition
                 stop_condition = False #DEBUG was False to start
-                if generation > 1: #stop after so many iterations
+                if generation > 5: #stop after so many iterations
                     stop_condition = True #DEBUG was False to start
                 if stop_condition:
                     break
@@ -430,12 +484,12 @@ def ga():
 
 
 if __name__ == "__main__":
-    #final_gen = sorted(ga(), key=Individual.fitness, reverse=True)
-    #best = final_gen[0]
+    final_gen = sorted(ga(), key=Individual.fitness, reverse=True)
+    best = final_gen[0]
 
     #---------------TEST TO PRINT FIRST INDIVIDUAL-----------------
-    final_gen = ga()
-    best = final_gen[0]
+    #final_gen = ga()
+    #best = final_gen[0]
     #--------------END TEST----------------------------------------
 
     print("Best fitness: " + str(best.fitness()))
