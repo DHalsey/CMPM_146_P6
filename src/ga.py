@@ -122,22 +122,29 @@ class Individual_Grid(object):
                 if genome[y][x] != "-" and genome[y][x] != "o": #if we are at a solid block
                     if genome[y+1][x] == "-" or genome[y+1][x] == "o": #if we have a space below the block
                         if genome[y+2][x] != "-" and genome[y+2][x] != "o": #if we have a 1 block gap
-                            genome[y][x] = random.choice(["o","-"]) #remove the top block to guarantee a 2 block gap
+                            genome[y][x] = random.choice(["o","-","-"]) #remove the top block to guarantee a 2 block gap
                         if genome[y+2][x-1] != "-" and genome[y+2][x-1] != "o": #if we have a 1 block gap
-                            genome[y][x] = random.choice(["o","-"]) #remove the top block to guarantee a 2 block gap
+                            genome[y][x] = random.choice(["o","-","-"]) #remove the top block to guarantee a 2 block gap
                         if genome[y+2][x+1] != "-" and genome[y+2][x+1] != "o": #if we have a 1 block gap
-                            genome[y][x] = random.choice(["o","-"]) #remove the top block to guarantee a 2 block gap
-
-                
+                            genome[y][x] = random.choice(["o","-","-"]) #remove the top block to guarantee a 2 block gap                
         return genome
 
 
     # Create zero or more children from self and other
     def generate_children(self, other):
-        new_genomeADD = copy.deepcopy(self.genome)
-        new_genomeREMOVE = copy.deepcopy(self.genome)
-        genomeADDED = Individual.mutate(self,new_genomeADD)
-        genomeREMOVED = Individual.mutate(self,new_genomeREMOVE, 2)
+        #new_genomeLeft = copy.deepcopy(self.genome)
+        #new_genomeRight = copy.deepcopy(other.genome)
+
+        genome12 = copy.deepcopy(self.genome)
+        genome21 = copy.deepcopy(other.genome)
+        for x in range(0,math.floor(width/2)):
+            for y in range(0,math.floor(height/2)):
+                #genome12[y][x] = self.genome[y][x]
+                genome12[height-1-y][width-1-x] = other.genome[height-1-y][width-1-x]
+                genome21[y][x] = other.genome[y][x]
+
+        genomeADDED = Individual.mutate(self,genome12)
+        genomeREMOVED = Individual.mutate(other,genome21, 2)
         individualADDED = Individual(genomeADDED)
         IndividualREMOVED = Individual(genomeADDED)
 
@@ -400,22 +407,26 @@ Individual = Individual_Grid
 
 def generate_successors(population):
     results = []
-    counter = 0
-    # STUDENT Design and implement this
-    # Hint: Call generate_children() on some individuals and fill up results.
 
     for pop in population:
-        counter +=1
-        newPop = Individual.generate_children(pop,pop.genome)
-        #genome = Individual.mutate(pop,genChild[0].genome)
+        i = random.randint(0,len(population)-1)
+        j = random.randint(0,len(population)-1)
 
-        #if genome:
+        newPop = Individual.generate_children(population[i],population[j])
+        #Re-ad the finish
+        #clear the enpoint of random blocks
+        for i in range(0,height-1):
+            for j in range(-3, 0):
+                newPop[0].genome[i][j] = "-"
+        #generate the flag
+        newPop[0].genome[7][-1] = "v"
+        for i in range(8, 15):
+            newPop[0].genome[i][-1] = "f"
+        newPop[0].genome[14][-1] = "X"
+        newPop[0].genome[15][-1] = "X"
+
         results.append(newPop[0])
-        #else:
-        #    results.append(pop)
-            #results.append(Individual.random_individual())
-                
-    
+                   
     if results: #if we have generated results, return results
         return results
     else: #while generate_successors is broken, return population
