@@ -1,0 +1,30 @@
+David Kirkpatrick
+Dustin Halsey Cruzid: dhalsey
+
+We implemented two different variations on Elitist Selection. The first was favoring mutation among its own genome, and the other had more emphasis on 
+splicing genomes between different individuals. We noticed that splicing caused too much uniformity and our worlds were emptying out.  The other method would splice two genomes down the middle, then mutate both the spliced genomes and compare which mutation was better.  However, through our trial, we were finding that combining these two methods produced more interesting results.
+
+In our final method for Individual_Grid (which encompases the bulk of our trialing), we decided that more interesting levels were found by first splicing, duplicating, then mutating.  our generate_children would generate 2 new genomes from the two passed in.  The first new genome would take the first have of genome 1 and the second half of genome 2.  We would then run a mutate function on both new spliced genomes for two separate cases.  For case 1, we would randomly add/overwrite new pieces into the genome.  In case 2, we would randomly remove blocks from the genome.  After running this, we end up with 4 genomes, 2 of which mutated on an additive basis while the other 2 mutated on a removal basis.  From these 4 genomes, we would then run a fitness test on all of them.  From this result, we would employ an elitest selection method to find which of these had the highest fitness.
+
+For our fitness, we added in a check for jumps as well as a larger emphasis on less negative space, less linearity. With this logic, our levels mutate towards levels that require more jumping and vertical movement in order to make the routes of travel more interesting.
+
+Additionally, our mutate function for Individual_Grid now calls a new function called "cleanup()".  This function is used to make sure that the new map follows the following sets of rules:
+* If a pipe top is above the player's max jump height, lower the piece to a jumpable height
+* for every pipe top, connect the pipe to the ground and remove any overlapping blocks
+* for every pipe middle piece, if there is no pipe top anywhere above it, remove the middle piece
+* for coins and brick blocks, if there is empty space on either sides of it, try to add a new coin or block to its sides based upon a probability of doing so
+	this is what allows the emergence of horizontal paths of blocks and coins
+
+In Individual DE, we did have to make some changes for our successors to not have any bounds errors. After that, we focused our attention to
+modifying mutation and calculate fitness. Changing fitness is what really brought the level to something that seemed interesting. Adding jump really
+helped force the level to add more obstacles and less linearity to the level. A new coefficient that we added was decoration, which also helped add
+more blocks into the empty world. Some changes to mutate were to allow some obstacles to be weighted more heavily, including stairs.
+
+Our first level, from grid, we have a good amount of pipes at different heights, causing them to have to jump. We also included platforms at multiple heights 
+which would encourage paths in the sky, and sometimes was the only path if there was not one on the ground. With this level, the submitted level has paths
+that are the shortest, but the longer path may be the safer and or only way to go.
+
+We found that DE was having less variety, giving us levels that were not as interesting due to all the 
+
+
+

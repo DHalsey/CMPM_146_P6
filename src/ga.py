@@ -10,7 +10,7 @@ import math
 
 width = 200
 height = 16
-numberOfGenerations = 5
+numberOfGenerations = 30
 mutateRate = 0.2
 
 
@@ -236,12 +236,14 @@ class Individual_DE(object):
         # STUDENT Add more metrics?
         # STUDENT Improve this with any code you like
         coefficients = dict(
-            meaningfulJumpVariance=0.5,
-            negativeSpace=0.6,
+            meaningfulJumpVariance=0.8,
+            negativeSpace= 0.1,
             pathPercentage=0.5,
             emptyPercentage=0.6,
+            decorationPercentage=0.9,
             linearity=-0.5,
-            solvability=2.0
+            solvability=3.0,
+            jumps=1
         )
         penalties = 0
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
@@ -256,6 +258,7 @@ class Individual_DE(object):
         if self._fitness is None:
             self.calculate_fitness()
         return self._fitness
+
 
     def mutate(self, new_genome):
         # STUDENT How does this work?  Explain it in your writeup.
@@ -311,9 +314,9 @@ class Individual_DE(object):
             elif de_type == "6_stairs":
                 h = de[2]
                 dx = de[3]  # -1 or 1
-                if choice < 0.33:
+                if choice < 0.44:
                     x = offset_by_upto(x, width / 8, min=1, max=width - 2)
-                elif choice < 0.66:
+                elif choice < 0.77:
                     h = offset_by_upto(h, 8, min=1, max=height - 4)
                 else:
                     dx = -dx
@@ -335,7 +338,9 @@ class Individual_DE(object):
                 pass
             new_genome.pop(to_change)
             heapq.heappush(new_genome, new_de)
+            print("end mutate")
         return new_genome
+
 
     def generate_children(self, other):
         # STUDENT How does this work?  Explain it in your writeup.
@@ -417,8 +422,9 @@ class Individual_DE(object):
         ]) for i in range(elt_count)]
         return Individual_DE(g)
 
-Individual = Individual_Grid
+Individual = Individual_DE
 
+#Ranomized Elitist Selection
 def generate_successors(population):
     results = []
 
@@ -426,30 +432,71 @@ def generate_successors(population):
         i = random.randint(0,len(population)-1)
         j = random.randint(0,len(population)-1)
 
-        newPop = Individual.generate_children(population[i],population[j])
-        #Re-ad the finish
-        #clear the enpoint of random blocks
-        for i in range(0,height-1):
-            for j in range(-3, 0):
-                newPop[0].genome[i][j] = "-"
-        #generate the flag
-        newPop[0].genome[7][-1] = "v"
-        for i in range(8, 15):
-            newPop[0].genome[i][-1] = "f"
-        newPop[0].genome[14][-1] = "X"
-        newPop[0].genome[15][-1] = "X"
+        if population[i].genome != [] and population[j].genome != [] and Individual.genome != []:
+            newPop = Individual.generate_children(population[i],population[j])
+            #Re-ad the finish
+            #clear the enpoint of random blocks
+            if Individual == Individual_Grid:
+                for i in range(0,height-1):
+                    for j in range(-3, 0):
+                        newPop[0].genome[i][j] = "-"
+                #generate the flag
+                newPop[0].genome[7][-1] = "v"
+                for i in range(8, 15):
+                    newPop[0].genome[i][-1] = "f"
+                newPop[0].genome[14][-1] = "X"
+                newPop[0].genome[15][-1] = "X"
 
-        results.append(newPop[0])
+            results.append(newPop[0])
                    
     if results: #if we have generated results, return results
         return results
     else: #while generate_successors is broken, return population
         return population
 
+"""
+#ELITIST SUCCESSOR, change random chance to increase or decrease chance of elite parent surviving
+def generate_successors(population):
+    results = []
 
+    for pop in population:
+        i = random.randint(0,len(population)-1)
+        j = random.randint(0,len(population)-1)
+
+
+        if random.randint(1,5) == 5: # 10 % chance of letting the most fit individual not crossover or mutate
+            #best = max(population, key=Individual.fitness
+            if population[i].genome != [] and population[j].genome != [] and Individual.genome != []:
+                best = population[j]
+                if population[i].fitness() < population[j].fitness():
+                    best = population[i]
+                results.append(best)
+        else:
+            if population[i].genome != [] and population[j].genome != [] and Individual.genome != []:
+                newPop = Individual.generate_children(population[i],population[j])
+                #Re-ad the finish
+                #clear the enpoint of random blocks
+            if Individual == Individual_Grid:
+                for i in range(0,height-1):
+                    for j in range(-3, 0):
+                        newPop[0].genome[i][j] = "-"
+                #generate the flag
+                newPop[0].genome[7][-1] = "v"
+                for i in range(8, 15):
+                    newPop[0].genome[i][-1] = "f"
+                newPop[0].genome[14][-1] = "X"
+                newPop[0].genome[15][-1] = "X"
+
+                results.append(newPop[0])
+                       
+    if results: #if we have generated results, return results
+        return results
+    else: #while generate_successors is broken, return population
+        return population
+"""
 def ga():
     # STUDENT Feel free to play with this parameter
-    pop_limit = 16
+    pop_limit = 48
     # Code to parallelize some computations
     batches = os.cpu_count()
     if pop_limit % batches != 0:
