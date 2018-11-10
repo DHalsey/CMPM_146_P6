@@ -572,7 +572,7 @@ if __name__ == "__main__":
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
     for k in range(0, 1):
-        #with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
-        with open("Player/Assets/Resources/Levels/" + "level1" + ".txt", 'w') as f:
+        with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+        #with open("Player/Assets/Resources/Levels/" + "level1" + ".txt", 'w') as f:
             for row in final_gen[k].to_level():
                 f.write("".join(row) + "\n")
