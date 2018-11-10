@@ -10,6 +10,8 @@ import math
 
 width = 200
 height = 16
+numberOfGenerations = 5
+mutateRate = 0.2
 
 
 options = [
@@ -66,11 +68,11 @@ class Individual_Grid(object):
     # Mutate a genome into a new genome.  Note that this is a _genome_, not an individual!
     # mode = 1 will remove some pieces
     # mode = 2 will add some pieces
-    def mutate(self, genome, mode = 1):
+    def mutate(self, genome, mode = 2):
         # STUDENT implement a mutation operator, also consider not mutating this individual
         # STUDENT also consider weighting the different tile types so it's not uniformly random
         # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-        probability = 0.2
+        probability = mutateRate
         left = 1
         right = width - 2
         
@@ -95,6 +97,18 @@ class Individual_Grid(object):
         pipeMaxHeight = 11
         for y in range(height-1):
             for x in range(1, width-2):
+                if genome[y][x] == "o":
+                    if genome[y][x+1] == "-" and random.random() <= 0.1:
+                        genome[y][x+1] = "o"
+                    if genome[y][x-1] == "-" and random.random() <= 0.1:
+                        genome[y][x-1] = "o"
+
+                if genome[y][x] == "B":
+                    if genome[y][x+1] == "-" and random.random() <= 0.45:
+                        genome[y][x+1] = "B"
+                    if genome[y][x-1] == "-" and random.random() <= 0.45:
+                        genome[y][x-1] = "B"
+
                 if genome[y][x] == "T": #if we have a pip top
                     if y < pipeMaxHeight: #if it is above the max height
                         genome[y][x] = "-"
@@ -122,11 +136,11 @@ class Individual_Grid(object):
                 if genome[y][x] != "-" and genome[y][x] != "o": #if we are at a solid block
                     if genome[y+1][x] == "-" or genome[y+1][x] == "o": #if we have a space below the block
                         if genome[y+2][x] != "-" and genome[y+2][x] != "o": #if we have a 1 block gap
-                            genome[y][x] = random.choice(["o","-","-"]) #remove the top block to guarantee a 2 block gap
+                            genome[y][x] = random.choice(["-","-"]) #remove the top block to guarantee a 2 block gap
                         if genome[y+2][x-1] != "-" and genome[y+2][x-1] != "o": #if we have a 1 block gap
-                            genome[y][x] = random.choice(["o","-","-"]) #remove the top block to guarantee a 2 block gap
+                            genome[y][x] = random.choice(["-","-"]) #remove the top block to guarantee a 2 block gap
                         if genome[y+2][x+1] != "-" and genome[y+2][x+1] != "o": #if we have a 1 block gap
-                            genome[y][x] = random.choice(["o","-","-"]) #remove the top block to guarantee a 2 block gap                
+                            genome[y][x] = random.choice(["-","-"]) #remove the top block to guarantee a 2 block gap                
         return genome
 
 
@@ -137,13 +151,13 @@ class Individual_Grid(object):
 
         genome12 = copy.deepcopy(self.genome)
         genome21 = copy.deepcopy(other.genome)
+        
         for x in range(0,math.floor(width/2)):
             for y in range(0,math.floor(height/2)):
-                #genome12[y][x] = self.genome[y][x]
                 genome12[height-1-y][width-1-x] = other.genome[height-1-y][width-1-x]
                 genome21[y][x] = other.genome[y][x]
-
-        genomeADDED = Individual.mutate(self,genome12)
+        
+        genomeADDED = Individual.mutate(self,genome12, 1)
         genomeREMOVED = Individual.mutate(other,genome21, 2)
         individualADDED = Individual(genomeADDED)
         IndividualREMOVED = Individual(genomeADDED)
@@ -435,7 +449,7 @@ def generate_successors(population):
 
 def ga():
     # STUDENT Feel free to play with this parameter
-    pop_limit = 8
+    pop_limit = 16
     # Code to parallelize some computations
     batches = os.cpu_count()
     if pop_limit % batches != 0:
@@ -473,7 +487,7 @@ def ga():
                 generation += 1
                 # STUDENT Determine stopping condition
                 stop_condition = False #DEBUG was False to start
-                if generation > 5: #stop after so many iterations
+                if generation > numberOfGenerations: #stop after so many iterations
                     stop_condition = True #DEBUG was False to start
                 if stop_condition:
                     break
