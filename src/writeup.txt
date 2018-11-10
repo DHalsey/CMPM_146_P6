@@ -20,11 +20,21 @@ modifying mutation and calculate fitness. Changing fitness is what really brough
 helped force the level to add more obstacles and less linearity to the level. A new coefficient that we added was decoration, which also helped add
 more blocks into the empty world. Some changes to mutate were to allow some obstacles to be weighted more heavily, including stairs.
 
+Generate children in DE would choose a random genome in both individuals, and then use both of those
+to generate a new genome. And then would do this once over. The function would then return two children, 
+both having the two newly generated genomes.
+
+
+Mutate in DE would rely on chance for which object it would weight and randomize in the world.
+
 Our first level, from grid, we have a good amount of pipes at different heights, causing them to have to jump. We also included platforms at multiple heights 
 which would encourage paths in the sky, and sometimes was the only path if there was not one on the ground. With this level, the submitted level has paths
 that are the shortest, but the longer path may be the safer and or only way to go.
 
-We found that DE was having less variety, giving us levels that were not as interesting due to all the 
+We found that DE was having less variety, giving us levels that were not as interesting as grid. Grid was not restrained to objects, thus, had more interesting generations.
 
 
+
+
+YES, we will enter the contest.(and win it too)
 
