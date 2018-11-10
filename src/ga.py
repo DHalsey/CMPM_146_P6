@@ -1,3 +1,7 @@
+# CMPM_146 PA6
+# David Kirkpatrick - dlkirkpa
+# Dustin Halsey - dhalsey
+
 import copy
 import heapq
 import metrics
@@ -10,7 +14,7 @@ import math
 
 width = 200
 height = 16
-numberOfGenerations = 30
+numberOfGenerations = 5
 mutateRate = 0.2
 
 
@@ -45,16 +49,14 @@ class Individual_Grid(object):
         measurements = metrics.metrics(self.to_level())
         # Print out the possible measurements or look at the implementation of metrics.py for other keys:
         # print(measurements.keys())
-        # Default fitness function: Just some arbitrary combination of a few criteria.  Is it good?  Who knows?
-        # STUDENT Modify this, and possibly add more metrics.  You can replace this with whatever code you like.
         coefficients = dict(
-            meaningfulJumpVariance=1.0,
+            meaningfulJumpVariance=1.0, #increased weight of jump variance to have more interesting levels
             negativeSpace=0.6,
             pathPercentage=0.5,
             emptyPercentage=0.6,
             linearity=-0.5,
             solvability=2.0,
-            jumps=0.02
+            jumps=0.02 #added to emphasize maps with more jumps
         )
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients))
@@ -70,9 +72,6 @@ class Individual_Grid(object):
     # mode = 1 will remove some pieces
     # mode = 2 will add some pieces
     def mutate(self, genome, mode = 2):
-        # STUDENT implement a mutation operator, also consider not mutating this individual
-        # STUDENT also consider weighting the different tile types so it's not uniformly random
-        # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
         probability = mutateRate
         left = 1
         right = width - 2
@@ -86,30 +85,33 @@ class Individual_Grid(object):
                         elif mode == 2:
                             genome[y][x] = random.choices(options)
                         
-                #else: #we are on the floor
-
-                #pass
         #remove the bullshit above the player's start
         for y in range(height-2):
             genome[y][0] = "-"
         return self.cleanup(genome)
 
+    #cleans up a mutated genome to make sure it satisfies the following constraints:
+    #we can always jump over a pipe
+    #all pipes are connected to the ground
+    #coins and bricks try to extend to horizontal lines
+    #we do not have holes that we cannot jump through
     def cleanup(self, genome):
         pipeMaxHeight = 11
         for y in range(height-1):
             for x in range(1, width-2):
+                #Try to make lines of coins
                 if genome[y][x] == "o":
                     if genome[y][x+1] == "-" and random.random() <= 0.1:
                         genome[y][x+1] = "o"
                     if genome[y][x-1] == "-" and random.random() <= 0.1:
                         genome[y][x-1] = "o"
-
+                #Try to make lines of bricks
                 if genome[y][x] == "B":
                     if genome[y][x+1] == "-" and random.random() <= 0.45:
                         genome[y][x+1] = "B"
                     if genome[y][x-1] == "-" and random.random() <= 0.45:
                         genome[y][x-1] = "B"
-
+                #lower the pipe tops to jumpable heights
                 if genome[y][x] == "T": #if we have a pip top
                     if y < pipeMaxHeight: #if it is above the max height
                         genome[y][x] = "-"
@@ -121,11 +123,12 @@ class Individual_Grid(object):
                         for yy in range(y+1,height-1):
                             genome[yy][x] = "|" #connect the pipe to the ground
                             genome[yy][x+1] = "-" #remove any overlap on the pipe
+                #connects pipes to the floor
                 if genome[y][x] == "T":
                     for yy in range(0,height-1):
                         if genome[yy][x-1] == "T":
                             genome[y][x] = "-"
-                
+                #remove pipes that dont have a topper
                 if genome[y][x] == "|":
                     hasTop = False #is there a topper above it?
                     for yy in range(0,y):
@@ -134,6 +137,7 @@ class Individual_Grid(object):
                     if hasTop == False:
                         genome[y][x] = "-" #remove the pipe piece if it didnt have a topper
               
+                #remove unnavigatable holes
                 if genome[y][x] != "-" and genome[y][x] != "o": #if we are at a solid block
                     if genome[y+1][x] == "-" or genome[y+1][x] == "o": #if we have a space below the block
                         if genome[y+2][x] != "-" and genome[y+2][x] != "o": #if we have a 1 block gap
@@ -163,7 +167,6 @@ class Individual_Grid(object):
         individualADDED = Individual(genomeADDED)
         IndividualREMOVED = Individual(genomeADDED)
 
-        print(individualADDED.fitness())
         if (individualADDED.fitness() > IndividualREMOVED.fitness()):
             return (individualADDED,)
         else:
@@ -423,7 +426,7 @@ class Individual_DE(object):
         ]) for i in range(elt_count)]
         return Individual_DE(g)
 
-Individual = Individual_DE
+Individual = Individual_Grid
 
 #Ranomized Elitist Selection
 def generate_successors(population):
@@ -497,7 +500,7 @@ def generate_successors(population):
 """
 def ga():
     # STUDENT Feel free to play with this parameter
-    pop_limit = 48
+    pop_limit = 16
     # Code to parallelize some computations
     batches = os.cpu_count()
     if pop_limit % batches != 0:
